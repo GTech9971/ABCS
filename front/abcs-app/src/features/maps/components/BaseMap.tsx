@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import './BaseMap.scss';
 
 export const BaseMap: React.FC = () => {
@@ -13,8 +13,6 @@ export const BaseMap: React.FC = () => {
         if (!mapRef.current) { return; }
 
         console.log('render');
-
-        console.log("Container size:", mapRef.current.clientWidth, mapRef.current.clientHeight);
 
         map.current = new maplibregl.Map({
             container: mapRef.current,
@@ -56,7 +54,13 @@ export const BaseMap: React.FC = () => {
                 return new maplibregl.Marker().setLngLat(e.lngLat).addTo(map.current!);
             });
         });
-    }, [mapRef.current?.clientHeight]);
+
+        // 初期描画時にMapが小さくならないように対応
+        map.current.on('load', (e) => {
+            e.target.resize();
+        });
+    }, []);
+
 
     return (
         <div className='map-wrap'>
