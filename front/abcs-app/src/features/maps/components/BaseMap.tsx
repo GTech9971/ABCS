@@ -1,18 +1,25 @@
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './BaseMap.scss';
 
 export const BaseMap: React.FC = () => {
-    const mapRef = useRef(null);
+    const mapRef = useRef<HTMLDivElement>(null);
+    const map = useRef<maplibregl.Map>();
+    const [maker, setMaker] = useState<maplibregl.Marker>();
+
 
     useEffect(() => {
         if (!mapRef.current) { return; }
 
-        const map = new maplibregl.Map({
+        console.log('render');
+
+        console.log("Container size:", mapRef.current.clientWidth, mapRef.current.clientHeight);
+
+        map.current = new maplibregl.Map({
             container: mapRef.current,
-            zoom: 5,
-            center: [138, 37],
+            zoom: 20,
+            center: [133.8409660201574, 34.339689006967006],
             minZoom: 5,
             maxZoom: 18,
             maxBounds: [122, 20, 154, 50],
@@ -38,11 +45,18 @@ export const BaseMap: React.FC = () => {
                     },
                 ]
             }
-        })
-    }, []);
+        });
 
-
-
+        map.current.on('click', (e) => {
+            console.log(e);
+            setMaker((prev) => {
+                if (prev) {
+                    prev.remove();
+                }
+                return new maplibregl.Marker().setLngLat(e.lngLat).addTo(map.current!);
+            });
+        });
+    }, [mapRef.current?.clientHeight]);
 
     return (
         <div className='map-wrap'>
